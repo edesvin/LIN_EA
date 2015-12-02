@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: GPIO.c $
- * $Revision: 1.0 $
+ * $Revision: 1.1 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 01-12-2015 $
+ * $Date: 02-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -34,7 +34,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA      |         1.0                      */
+/*                     |         LIN_EA      |         1.1                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -45,14 +45,27 @@
 /* Includes */
 /*============================================================================*/
 #include "GPIO.h"
+/* Defines */
+/*============================================================================*/
+#define S_OUTPUT 	0
+#define S_INPUT 	1
+#define S_LIN_TX	2
+#define S_LIN_RX	3
+
+#define R_OUTPUT 	0x0200
+#define R_INPUT 	0x0100
+#define R_LIN_TX	0x0400
+#define R_LIN_RX	0x0103
 /*==============================================================================
 * Function: Set_Pin_State
 * 
 * Description: Changes the logic level of the output pin selected.
 *
 ==============================================================================*/
-void Set_Pin_State (T_UBYTE, T_UBYTE){
-	/**/
+void Set_Pin_State (T_UBYTE lub_PIN, T_UBYTE lub_STATE){
+	
+	SIU.GPDO[lub_PIN].B.PDO = lub_STATE;
+
 }
 /*==============================================================================
 * Function: Set_Pin_Mode
@@ -61,8 +74,31 @@ void Set_Pin_State (T_UBYTE, T_UBYTE){
 * the selected mode.
 *
 ==============================================================================*/
-void Set_Pin_Mode (T_UBYTE, T_UBYTE){
-	/**/
+void Set_Pin_Mode (T_UBYTE lub_PIN, lub_MODE T_UBYTE){
+
+	switch(lub_MODE){
+	
+		case S_OUTPUT:
+			SIU.PCR[lub_PIN].R = R_OUTPUT;
+			break;
+			
+		case S_INPUT:
+			SIU.PCR[lub_PIN].R = R_INPUT;
+			break;
+			
+		case S_LIN_TX:
+			SIU.PCR[lub_PIN].R = R_LIN_TX;
+			break;
+			
+		case S_LIN_RX:
+			SIU.PCR[lub_PIN].R = R_LIN_RX;
+			break;
+			
+		default:
+			/* It shall do nothing */
+			break;
+			
+	}
 }
 /*==============================================================================
 * Function: Get_Pin_State
@@ -70,6 +106,8 @@ void Set_Pin_Mode (T_UBYTE, T_UBYTE){
 * Description: This function returns the state of the given pin.
 *
 ==============================================================================*/
-T_UBYTE Get_Pin_State (T_UBYTE){
-	/**/
+T_UBYTE Get_Pin_State (T_UBYTE lub_PIN){
+	
+	return SIU.GPDO[lub_PIN].B.PDO;
+
 }
