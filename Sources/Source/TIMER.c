@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: TIMER.c $
- * $Revision: 1.0 $
+ * $Revision: 1.1 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 01-12-2015 $
+ * $Date: 03-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -34,7 +34,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.0                      */
+/*                     |         LIN_EA     |         1.1                     */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -45,6 +45,11 @@
 /* Includes */
 /*============================================================================*/
 #include "TIMER.h"
+/* Defines */
+/*============================================================================*/
+#define LDVAL_0	0x0009C3FF		/*	Time Start Value */
+#define ISR_PIT_CH0 59
+#define PRIORITY_1 1
 /*==============================================================================
 * Function: InitPIT
 * 
@@ -52,7 +57,12 @@
 *
 ==============================================================================*/
 void InitPIT (void){
-	/**/
+	
+	PIT.PITMCR.B.MDIS = 0;													//Clock for PIT timers is enabled.
+	PIT.PITMCR.B.FRZ = 1;													//Timers are stopped in debug mode.
+	INTC_InstallINTCInterruptHandler( Tick_ISR, ISR_PIT_CH0, PRIORITY_1 );	//Software Interrupt
+	INTC.CPR.R = 0;
+	
 }
 /*==============================================================================
 * Function: InitPITChannel
@@ -60,6 +70,11 @@ void InitPIT (void){
 * Description: This function configures the given channel of the PIT timer.
 *
 ==============================================================================*/
-void InitPITChannel (T_UBYTE){
-	/**/
+void InitPITChannel (T_UBYTE lub_CH ) {
+	
+	PIT.CH[lub_CH].LDVAL.R = LDVAL_0;	//Time Start Value.
+	PIT.CH[lub_CH].TCTRL.B.TEN = 1;		//Timer will be active.
+	PIT.CH[lub_CH].TCTRL.B.TIE = 1;		//Interrupt will be requested whenever TIF is set.
+	PIT.CH[lub_CH].TFLG.B.TIF = 1;		//Time Interrupt Flag.
+	
 }
