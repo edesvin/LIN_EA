@@ -5,7 +5,7 @@
 /*============================================================================*/
 /*!
  * $Source: LIN.c $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.2                      */
+/*                     |         LIN_EA     |         1.3                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -46,6 +46,11 @@
 /* Includes */
 /*============================================================================*/
 #include "LIN.h"
+
+/*============================================================================*/
+#define TX_IRQ 80
+#define RX_IRQ 79
+#define Error_IRQ 81
 /*============================================================================*/
 /* Constants and types */
 /*============================================================================*/
@@ -70,7 +75,7 @@ typedef enum {
 }TX_STATES;
 
 /*============================================================================*/
-
+extern volatile T_UBYTE rub_NewSlaveState;
 extern volatile T_UBYTE rub_SlaveStatus;
 extern volatile T_UBYTE rub_LEDStatus;
 
@@ -197,19 +202,31 @@ void RX_ISR (void){
 				/* Do nothing */
 			break;
 		case cmd_LED_on:
-			rub_LEDStatus = ON;
+			if(rub_SlaveStatus == TRUE){
+				rub_LEDStatus = ON;
+			}else{
+				/* Do nothing*/
+			}
 			break;
 		case cmd_LED_off:
-			rub_LEDStatus = OFF;
+			if(rub_SlaveStatus == TRUE){
+				rub_LEDStatus = OFF;
+			}else{
+				/* Do nothing*/
+			}
 			break;
 		case cmd_LED_toggling:
-			rub_LEDStatus = TOGGLING;
+			if(rub_SlaveStatus == TRUE){
+				rub_LEDStatus = TOGGLING;
+			}else{
+				/* Do nothing*/
+			}
 			break;
 		case cmd_disable_slv:
-			rub_SlaveStatus = FALSE;
+			rub_NewSlaveState = FALSE;
 			break;
 		case cmd_enable_slv:
-			rub_SlaveStatus = TRUE;
+			rub_NewSlaveState = TRUE;
 			break;
 		case default:
 			/* Do nothing */
@@ -224,118 +241,148 @@ void RX_ISR (void){
 *
 ==============================================================================*/
 void Init_LIN (void){
-	LINFLEX_2.LINCR1.B.INIT = 0x01; /*Enter initialization mode.*/
+	LINFLEX_0.LINCR1.B.INIT = 0x01; 	/* Starting initialization mode */
 
-    LINFLEX_2.LINCR1.B.SLEEP = 0x00; /* Sleep clear */
+    LINFLEX_0.LINCR1.B.SLEEP = 0x00; 	/* Sleep clear */
 
-    LINFLEX_2.UARTCR.B.UART = 0x00; /* UART Mode: Disabled */
+    LINFLEX_0.UARTCR.B.UART = 0x00;	 	/* LIN Mode */
 	
-    LINFLEX_2.LINCR2.R = 0x6000; /* 0 b 0110 0000 0000 0000 <- Reset status */
-        /* Idle on Bit Error: Enabled -> Bit error reset LIN state machine.*/
-        /* Idle on Identifier Parity Error: Enabled -> Identifier Parity error reset LIN state machine.*/
+    LINFLEX_0.LINCR2.R = 0x6000; 
+	
+		/* 0 b 0110 0000 0000 0000 <- Reset status */
+	
+		/* Idle on Bit Error: Enabled -> Bit error resets LIN state machine.*/
+		/* Idle on Identifier Parity Error: Enabled -> Identifier Parity error resets LIN state machine.*/
 
-	/* Baudrate generator */
-    LINFLEX_2.LINIBRR.R = 0x00D0;
-        /* Baudrate : 19200 Symbols/sec */
-        /* Integer Baud Rate Factor: 208*/
+    LINFLEX_0.LINIBRR.R = 0x00D0;
+        /* Baud rate : 19200 Symbols/sec */
+        /* Integer Baud Rate Factor: 208 */
 
-    LINFLEX_2.LINFBRR.R = 0x05;
-        /* Fractional Baud Rate Factor: 5*/
+    LINFLEX_0.LINFBRR.R = 0x05;
+        /* Fractional Baud Rate Factor: 5 */
 
-    LINFLEX_2.UARTCR.R = 0x0000;
+    LINFLEX_0.UARTCR.R = 0x0000;
         /* UART Mode: Disable*/
         /* Parity transmit/check: Disable*/
         /* Parity Control Option: Even Parity*/
         /* Word Length in UART mode: 7 bit data + parity*/
         /* Tx FIFO/buffer mode: Disabled */
         /* Rx FIFO/buffer mode: Disabled */
-        /* Transmitter data field length / Tx FIFO counter (Bytes):1*/
-        /* Receiver Data Field Length /Rx FIFO counter  (Bytes): 1*/
+        /* Transmitter data field length / Tx FIFO counter (Bytes):1 */
+        /* Receiver Data Field Length /Rx FIFO counter  (Bytes): 1 */
         /* Transmitter : Disable*/
         /* Receiver : Disable*/
 
 
 /*----------------------------------------------------------- */
-/*        UART preset timeout register (LINFLEX_2_UARTPTO)        */
+/*        UART preset timeout register (LINFLEX_0_UARTPTO)    */
 /*----------------------------------------------------------- */
     LINFLEX_2.UARTPTO.R = 0x0FFF;
         /* Preset Timeout counter : 4095*/
 
 
 /*----------------------------------------------------------- */
-/*        LIN timeout control status register  (LINFLEX_2_LINTCSR)        */
+/*        LIN timeout control status register  (LINFLEX_0_LINTCSR)        */
 /*----------------------------------------------------------- */
 
-    LINFLEX_2.LINTCSR.R = 0x0200; /* 0 b 0000 0010 0000 0000 */
-        /* LIN timeout mode: Disabled*/
-        /* Idle on Timeout: Enabled*/
-        /* Timeout Counter: Disable*/
+    LINFLEX_0.LINTCSR.R = 0x0200; /* 0 b 0000 0010 0000 0000 */
+        /* LIN timeout mode 			*/
+        /* Idle on Timeout: Enabled		*/
+        /* Timeout Counter: Disable		*/
 
 
 /*----------------------------------------------------------- */
-/*        LIN output compare register  (LINFLEX_2_LINOCR)        */
+/*        LIN output compare register  (LINFLEX_0_LINOCR)        */
 /*----------------------------------------------------------- */
 
-    LINFLEX_2.LINOCR.R = 0xFFFF;
+    LINFLEX_0.LINOCR.R = 0xFFFF;
         /* Output compare Value 1: 255*/
         /* Output compare Value 2: 255*/
 
 /*----------------------------------------------------------- */
-/*        LIN timeout control register  (LINFLEX_2_LINTOCR)        */
+/*        LIN timeout control register  (LINFLEX_0_LINTOCR)        */
 /*----------------------------------------------------------- */
 
-    LINFLEX_2.LINTOCR.R = 0x0E2C;
+    LINFLEX_0.LINTOCR.R = 0x0E2C; /* Default configuration */
         /* Header Timeout (Bit Time): 44*/
         /* Response Timeout: 14*/
 
 /*----------------------------------------------------------- */
-/*        LIN interrupt enable register  (LINFLEX_2_LINIER)        */
+/*        LIN interrupt enable register  (LINFLEX_0_LINIER)   */
 /*----------------------------------------------------------- */
 
-    LINFLEX_2.LINIER.R = 0x0000;
-
-        /* Header Received Interrupt: Disabled    */
-        /* Data Transmitted Interrupt: Disabled    */
-        /* Data Reception Complete Interrupt: Disabled    */
-        /* Data Buffer Empty Interrupt: Disabled    */
-        /* Data Buffer Full Interrupt: Disabled    */
-        /* Wakeup Interrupt: Disabled    */
-        /* LIN State Interrupt: Disabled    */
-        /* Buffer Overrun Error Interrupt: Disabled    */
-        /* Frame Error Interrupt: Disabled    */
-        /* Header Error Interrupt: Disabled    */
-        /* Checksum Error Interrupt: Disabled    */
-        /* Bit Error Interrupt: Disabled    */
-        /* Output Compare Interrupt: Disabled    */
-        /* Stuck at Zero Interrupt: Disabled    */
+    LINFLEX_0.LINIER.R = 0x0004;
+        /* Header Received Interrupt: Disabled  		 	*/ //not so sure
+        /* Data Transmitted Interrupt: Disabled  		 	*/ //not so sure
+        /* Data Reception Complete Interrupt: Enabled   	*/ //not so sure
+        /* Data Buffer Empty Interrupt: Disabled  		 	*/
+        /* Data Buffer Full Interrupt: Disabled  		 	*/
+        /* Wakeup Interrupt: Disabled   				 	*/
+        /* LIN State Interrupt: Disabled					*/
+        /* Buffer Overrun Error Interrupt: Disabled   	 	*/
+        /* Frame Error Interrupt: Disabled    				*/
+        /* Header Error Interrupt: Disabled    				*/
+        /* Checksum Error Interrupt: Disabled    			*/
+        /* Bit Error Interrupt: Disabled    				*/
+        /* Output Compare Interrupt: Disabled    			*/
+        /* Stuck at Zero Interrupt: Disabled    			*/
 
 /*----------------------------------------------------------- */
-/*        LIN control register 1   (LINFLEX_2_LINCR1)        */
+/*        LIN control register 1   (LINFLEX_0_LINCR1)         */
 /*----------------------------------------------------------- */
 
-    LINFLEX_2.LINCR1.R = 0x0081; /* 0 b 0000 0000 1000 0001   */
-        /* Initialization Request: Set */
-        /* MME - Master Mode Enable: Slave*/
-        /* Receiver Buffer: Not Locked*/
-        /* LBKM - Loopback Mode: Disabled*/
-        /* Self Test Mode: Disabled*/
-        /* LIN Master Break Length: 10 bits*/
-        /* Slave Mode Break Detection Threshold: 11 bits*/
-        /* Bypass Filter: Enabled*/
-        /* Automatic Wake-Up Mode: Disabled*/
-        /* Checksum field: Enabled*/
-        /* Checksum Calculation: Disabled*/
-        /* LIN Slave Automatic Resynchronization: Disabled*/
+    LINFLEX_0.LINCR1.R = 0x0081; /* 0 b 0011 0000 0000 0011   */
+        /* Initialization Request: Set 								*/
+        /* Receiver Buffer: Locked									*/
+        /* Slave Mode Break Detection Threshold: 11 bits			*/
+		/* MME - Master Mode Enable: Slave							*/
+		/* LBKM - Loop back Mode: Disabled							*/
+		/* Self Test Mode: Disabled									*/
+        /* Bypass Filter: Disable									*/
+		/* LIN Master Break Length: 10 bit							*/
+        /* Automatic Wake-Up Mode: Enabled - Get out of sleep mode	*/ //not so sure
+        /* LASE - LIN Slave Automatic Resynchronization: Enabled	*/
+        /* Checksum field disable: Disabled							*/
+        /* Checksum Calculation: Disabled							*/
 
+	/* Starts filters' configuration */
+	LINFLEX_0.IFER.B.FACT = 0; 		/* First deactivate filters */
+	LINFLEX_0.IFMR.B.IFM  = 0; 		/*All the filters in identifier LIST mode*/
+	
+	/*Slave1_RSP*/
+	LINFLEX_0.IFCR[0].DFL = 0x01;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[0].DIR = 0x01; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[0].CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[0].ID =  0x20;  	/*Identifier 6 bits. 0x20 with parity bits.*/	
+
+	/*Slave1_ID*/
+	LINFLEX_0.IFCR[1].DFL = 0x06;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[1].DIR = 0x01; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[1].CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[1].ID =  0x30;  	/*Identifier 6 bits. 0xF0 with parity bits.*/	
+	
+	/*MASTER_CMD_ALL*/
+	LINFLEX_0.IFCR[2].DFL = 0x00;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[2].DIR = 0x00; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[2].CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[2].ID =  0x0F;  	/*Identifier 6 bits. 0xCF with parity bits.*/	
+	
+	/*MASTER_CMD_SLV1*/
+	LINFLEX_0.IFCR[3].DFL = 0x00;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[3].DIR = 0x00; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[3].CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[3].ID =  0x10;  	/*Identifier 6 bits. 0x50 with parity bits.*/	
+	
+	LINFLEX_0.IFER.B.FACT = 0x03; 	/* Activate bits FACT[0] and FACT[1] to activate the filters 0 - 3 */
+	/* Finishes filters' configuration */
+	
+    LINFLEX_0.LINCR1.B.INIT = 0x00; /*Initialization done*/
 		
-	/*Activate filters.*/
-	LINFLEX_2.IFER.B.FACT = 0x0000;
-	LINFLEX_2.IFMI.B.IFMI = 0x0000;
-	LINFLEX_2.IFMR.B.IFM  = 0x0000;
-	//LINFLEX_2.IFCR0.R = 0x00;
-
-    LINFLEX_2.LINCR1.B.INIT = 0;
-        /*Initialization Request: Clear */
+	INTC_InstallINTCInterruptHandler(TX_ISR,TX_IRQ,1);
+	INTC_InstallINTCInterruptHandler(RX_ISR,RX_IRQ,2);	
+	INTC_InstallINTCInterruptHandler(Error_handler,Error_IRQ,3);	
+	
+	INTC.CPR.R = 0;
 }
 /*==============================================================================
 * Function: Error_handler
