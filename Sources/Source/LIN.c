@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: LIN.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 02-12-2015 $
+ * $Date: 03-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.1                      */
+/*                     |         LIN_EA     |         1.2                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -46,6 +46,45 @@
 /* Includes */
 /*============================================================================*/
 #include "LIN.h"
+/*============================================================================*/
+/* Constants and types */
+/*============================================================================*/
+
+typedef enum{
+	cmd_NONE,
+	cmd_LED_on,
+	cmd_LED_off,
+	cmd_LED_toggling,
+	cmd_disable_slv,
+	cmd_enable_slv
+}t_cmdType;
+
+typedef enum { 
+	MATCH_INDEX_RSP,
+	MATCH_INDEX_ID
+}MATCH_INDEX;
+
+typedef enum { 
+	IDLE,
+	TRANSMISSION
+}TX_STATES;
+
+/*============================================================================*/
+
+extern volatile T_UBYTE rub_SlaveStatus;
+extern volatile T_UBYTE rub_LEDStatus;
+
+/*============================================================================*/
+
+T_UBYTE raub_MembersInits[6] = {'A','Z','S','E','E','V'};
+T_UBYTE rub_TeamNumber = 1;
+
+/*============================================================================*/
+/* Private functions */
+T_UBYTE IdleState(T_UBYTE);
+T_UBYTE TxState(T_UBYTE);
+
+/*============================================================================*/
 /*==============================================================================
 * Function: TX_ISR
 * 
@@ -55,17 +94,92 @@
 *
 ==============================================================================*/
 void TX_ISR (void){
+	static T_UBYTE rub_TxStateVar = IDLE;
 	
-	/*Check whether it is necessary to check that a header was just received. It would be necessary
-	if other flags enter here.*/
+	switch (rub_TxStateVar) {
 	
+		case IDLE:
+			rub_TxStateVar = IdleState(rub_TxStateVar);
+			break;
+			
+		case TRANSMISSION:
+			rub_TxStateVar = TxState(rub_TxStateVar);
+			break;
+			
+		case default:
+			/* Do nothing. */
+			break;
 	
-	/* LINFLEX_0.BDRL.R = ptr_info[FMI]*/
-	LINFLEX_0.BDRL.R = 0xABCD;
-	LINFLEX_0.BDRM.R = 0x00;
+	}
 	
-	LINFLEX_2.LINCR2.B.DDRQ = 1;
+}
+/*==============================================================================
+* Function: Tx_IdleState
+* 
+* Description: 
+* 
+* 
+*
+==============================================================================*/
+T_UBYTE IdleState(T_UBYTE lub_TxStateVar){
+
+	if(LINFLEX_0.LINSR.B.HRF){ /* Header Reception Flag */
+		LINFLEX_0.LINSR.B.HRF = 1;
+		lub_TxStateVar = TRANSMISSION;
+		
+		switch (LINFLEX_0.IFMI.B.IFMI){ /* Filter Match Index */
+		
+			case MATCH_INDEX_RSP:
+				/* Fills the first two bytes of the buffer's register */
+				LINFLEX_0.BDRL.DATA0 = rub_SlaveStatus;
+				LINFLEX_0.BDRL.DATA1 = rub_LEDStatus;
+				break;
+				
+			case MATCH_INDEX_ID:
+				/* Fills the first buffer's register */
+				LINFLEX_0.BDRL.DATA0 = rub_TeamNumber;
+				LINFLEX_0.BDRL.DATA1 = raub_MembersInits[0];
+				LINFLEX_0.BDRL.DATA2 = raub_MembersInits[1];
+				LINFLEX_0.BDRL.DATA3 = raub_MembersInits[2];
+				
+				/* Fills the first 3 bytes of the second buffer's register */
+				LINFLEX_0.BDRM.DATA0 = raub_MembersInits[3];
+				LINFLEX_0.BDRM.DATA1 = raub_MembersInits[4];
+				LINFLEX_0.BDRM.DATA2 = raub_MembersInits[5];
+				break;
+			
+			case default:
+				/* Do nothing */
+				break;
+		}
+		
+		LINFLEX_2.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
+		
+	}else{
+		/* Do nothing */
+	}
 	
+	return lub_TxStateVar;
+}
+/*==============================================================================
+* Function: Tx_TransmissionState
+* 
+* Description: 
+* 
+* 
+*
+==============================================================================*/
+T_UBYTE TxState(T_UBYTE lub_TxStateVar){
+
+	if(LINFLEX_0.LINSR.B.DTF){ /*Data Transmission Completed Flag */ 
+	/* ******Bit_error and time out implementation must be done********* */
+		LINFLEX_0.LINSR.B.DTF = 1;
+		lub_TxStateVar = IDLE;		
+	}else{
+		/* Do nothing */
+	}
+	
+	return lub_TxStateVar;
 }
 /*==============================================================================
 * Function: RX_ISR
@@ -76,7 +190,32 @@ void TX_ISR (void){
 *
 ==============================================================================*/
 void RX_ISR (void){
-	/**/
+
+	switch (LINFLEX_0.BDRL.DATA0){
+	
+		case cmd_NONE:
+				/* Do nothing */
+			break;
+		case cmd_LED_on:
+			rub_LEDStatus = ON;
+			break;
+		case cmd_LED_off:
+			rub_LEDStatus = OFF;
+			break;
+		case cmd_LED_toggling:
+			rub_LEDStatus = TOGGLING;
+			break;
+		case cmd_disable_slv:
+			rub_SlaveStatus = FALSE;
+			break;
+		case cmd_enable_slv:
+			rub_SlaveStatus = TRUE;
+			break;
+		case default:
+			/* Do nothing */
+			break;
+	}	
+
 }
 /*==============================================================================
 * Function: Init_LIN
@@ -206,5 +345,5 @@ void Init_LIN (void){
 *
 ==============================================================================*/
 void Error_handler (void){
-	/**/
+	/*To be implemented.*/
 }
