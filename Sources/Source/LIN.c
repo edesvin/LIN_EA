@@ -5,7 +5,7 @@
 /*============================================================================*/
 /*!
  * $Source: LIN.c $
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.3                      */
+/*                     |         LIN_EA     |         1.4                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -111,7 +111,7 @@ void TX_ISR (void){
 			rub_TxStateVar = TxState(rub_TxStateVar);
 			break;
 			
-		case default:
+		default:
 			/* Do nothing. */
 			break;
 	
@@ -136,24 +136,24 @@ T_UBYTE IdleState(T_UBYTE lub_TxStateVar){
 		
 			case MATCH_INDEX_RSP:
 				/* Fills the first two bytes of the buffer's register */
-				LINFLEX_0.BDRL.DATA0 = rub_SlaveStatus;
-				LINFLEX_0.BDRL.DATA1 = rub_LEDStatus;
+				LINFLEX_0.BDRL.B.DATA0 = rub_SlaveStatus;
+				LINFLEX_0.BDRL.B.DATA1 = rub_LEDStatus;
 				break;
 				
 			case MATCH_INDEX_ID:
 				/* Fills the first buffer's register */
-				LINFLEX_0.BDRL.DATA0 = rub_TeamNumber;
-				LINFLEX_0.BDRL.DATA1 = raub_MembersInits[0];
-				LINFLEX_0.BDRL.DATA2 = raub_MembersInits[1];
-				LINFLEX_0.BDRL.DATA3 = raub_MembersInits[2];
+				LINFLEX_0.BDRL.B.DATA0 = rub_TeamNumber;
+				LINFLEX_0.BDRL.B.DATA1 = raub_MembersInits[0];
+				LINFLEX_0.BDRL.B.DATA2 = raub_MembersInits[1];
+				LINFLEX_0.BDRL.B.DATA3 = raub_MembersInits[2];
 				
 				/* Fills the first 3 bytes of the second buffer's register */
-				LINFLEX_0.BDRM.DATA0 = raub_MembersInits[3];
-				LINFLEX_0.BDRM.DATA1 = raub_MembersInits[4];
-				LINFLEX_0.BDRM.DATA2 = raub_MembersInits[5];
+				LINFLEX_0.BDRM.B.DATA4 = raub_MembersInits[3];
+				LINFLEX_0.BDRM.B.DATA5 = raub_MembersInits[4];
+				LINFLEX_0.BDRM.B.DATA6 = raub_MembersInits[5];
 				break;
 			
-			case default:
+			default:
 				/* Do nothing */
 				break;
 		}
@@ -196,7 +196,7 @@ T_UBYTE TxState(T_UBYTE lub_TxStateVar){
 ==============================================================================*/
 void RX_ISR (void){
 
-	switch (LINFLEX_0.BDRL.DATA0){
+	switch (LINFLEX_0.BDRL.B.DATA0){
 	
 		case cmd_NONE:
 				/* Do nothing */
@@ -228,7 +228,7 @@ void RX_ISR (void){
 		case cmd_enable_slv:
 			rub_NewSlaveState = TRUE;
 			break;
-		case default:
+		default:
 			/* Do nothing */
 			break;
 	}	
@@ -277,7 +277,8 @@ void Init_LIN (void){
 /*----------------------------------------------------------- */
 /*        UART preset timeout register (LINFLEX_0_UARTPTO)    */
 /*----------------------------------------------------------- */
-    LINFLEX_2.UARTPTO.R = 0x0FFF;
+    LINFLEX_0.UARTPTO.R = 0x0FFF;
+    
         /* Preset Timeout counter : 4095*/
 
 
@@ -350,28 +351,28 @@ void Init_LIN (void){
 	LINFLEX_0.IFMR.B.IFM  = 0; 		/*All the filters in identifier LIST mode*/
 	
 	/*Slave1_RSP*/
-	LINFLEX_0.IFCR[0].DFL = 0x01;  	/*Data Field Length. Number of bytes - 1 */
-	LINFLEX_0.IFCR[0].DIR = 0x01; 	/*Direction 0-> Receives, 1-> Transmits*/
-	LINFLEX_0.IFCR[0].CCS = 0x00; 	/*Enhanced Checksum*/
-	LINFLEX_0.IFCR[0].ID =  0x20;  	/*Identifier 6 bits. 0x20 with parity bits.*/	
+	LINFLEX_0.IFCR[0].B.DFL = 0x01;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[0].B.DIR = 0x01; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[0].B.CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[0].B.ID =  0x20;  	/*Identifier 6 bits. 0x20 with parity bits.*/	
 
 	/*Slave1_ID*/
-	LINFLEX_0.IFCR[1].DFL = 0x06;  	/*Data Field Length. Number of bytes - 1 */
-	LINFLEX_0.IFCR[1].DIR = 0x01; 	/*Direction 0-> Receives, 1-> Transmits*/
-	LINFLEX_0.IFCR[1].CCS = 0x00; 	/*Enhanced Checksum*/
-	LINFLEX_0.IFCR[1].ID =  0x30;  	/*Identifier 6 bits. 0xF0 with parity bits.*/	
+	LINFLEX_0.IFCR[1].B.DFL = 0x06;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[1].B.DIR = 0x01; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[1].B.CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[1].B.ID =  0x30;  	/*Identifier 6 bits. 0xF0 with parity bits.*/	
 	
 	/*MASTER_CMD_ALL*/
-	LINFLEX_0.IFCR[2].DFL = 0x00;  	/*Data Field Length. Number of bytes - 1 */
-	LINFLEX_0.IFCR[2].DIR = 0x00; 	/*Direction 0-> Receives, 1-> Transmits*/
-	LINFLEX_0.IFCR[2].CCS = 0x00; 	/*Enhanced Checksum*/
-	LINFLEX_0.IFCR[2].ID =  0x0F;  	/*Identifier 6 bits. 0xCF with parity bits.*/	
+	LINFLEX_0.IFCR[2].B.DFL = 0x00;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[2].B.DIR = 0x00; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[2].B.CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[2].B.ID =  0x0F;  	/*Identifier 6 bits. 0xCF with parity bits.*/	
 	
 	/*MASTER_CMD_SLV1*/
-	LINFLEX_0.IFCR[3].DFL = 0x00;  	/*Data Field Length. Number of bytes - 1 */
-	LINFLEX_0.IFCR[3].DIR = 0x00; 	/*Direction 0-> Receives, 1-> Transmits*/
-	LINFLEX_0.IFCR[3].CCS = 0x00; 	/*Enhanced Checksum*/
-	LINFLEX_0.IFCR[3].ID =  0x10;  	/*Identifier 6 bits. 0x50 with parity bits.*/	
+	LINFLEX_0.IFCR[3].B.DFL = 0x00;  	/*Data Field Length. Number of bytes - 1 */
+	LINFLEX_0.IFCR[3].B.DIR = 0x00; 	/*Direction 0-> Receives, 1-> Transmits*/
+	LINFLEX_0.IFCR[3].B.CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[3].B.ID =  0x10;  	/*Identifier 6 bits. 0x50 with parity bits.*/	
 	
 	LINFLEX_0.IFER.B.FACT = 0x03; 	/* Activate bits FACT[0] and FACT[1] to activate the filters 0 - 3 */
 	/* Finishes filters' configuration */
