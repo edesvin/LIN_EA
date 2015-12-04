@@ -5,7 +5,7 @@
 /*============================================================================*/
 /*!
  * $Source: GPIO.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
@@ -34,7 +34,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA      |         1.1                      */
+/*                     |         LIN_EA      |         1.2                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -47,15 +47,17 @@
 #include "GPIO.h"
 /* Defines */
 /*============================================================================*/
-#define S_OUTPUT 	0
-#define S_INPUT 	1
-#define S_LIN_TX	2
-#define S_LIN_RX	3
-
 #define R_OUTPUT 	0x0200
 #define R_INPUT 	0x0100
 #define R_LIN_TX	0x0400
-#define R_LIN_RX	0x0103
+#define R_LIN_RX	0x0100
+/*============================================================================*/
+typedef enum{
+	S_OUTPUT,
+	S_INPUT,
+	S_LIN_TX,
+	S_LIN_RX
+}PIN_MODES;
 /*==============================================================================
 * Function: Set_Pin_State
 * 
@@ -74,7 +76,7 @@ void Set_Pin_State (T_UBYTE lub_PIN, T_UBYTE lub_STATE){
 * the selected mode.
 *
 ==============================================================================*/
-void Set_Pin_Mode (T_UBYTE lub_PIN, lub_MODE T_UBYTE){
+void Set_Pin_Mode (T_UBYTE lub_PIN, T_UBYTE lub_MODE ){
 
 	switch(lub_MODE){
 	
