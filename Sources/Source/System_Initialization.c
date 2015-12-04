@@ -6,7 +6,7 @@
 /*============================================================================*/
 /*!
  * $Source: System_Initialization.c $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
@@ -33,7 +33,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA      |         1.2                      */
+/*                     |         LIN_EA      |         1.3                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -47,7 +47,7 @@
 
 /* Private functions */
 /*============================================================================*/
-void Mode_Entry(void);
+static void Mode_Entry(void);
 /*==============================================================================
 * Function: System_Init
 * Description: This function calls the functions that initializes the mode +
@@ -66,7 +66,7 @@ void System_Init(void){
 * Description: It initializes the mode of operation.
 *
 ==============================================================================*/
-void Mode_Entry(void){
+static void Mode_Entry(void){
 	ME.RUN[0].R = 0x001F0074;
 	ME.RUNPC[0].R = 0x000000FE;
 	ME.MCTL.R = 0x40005AF0;

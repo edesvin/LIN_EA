@@ -90,14 +90,14 @@ extern volatile T_UBYTE rub_LEDStatus;
 /* Private variables */
 /*============================================================================*/
 
-T_UBYTE raub_MembersInits[6] = {'A','Z','S','E','E','V'};
-T_UBYTE rub_TeamNumber = 1;
+static T_UBYTE raub_MembersInits[6] = {'A','Z','S','E','E','V'};
+static T_UBYTE rub_TeamNumber = 1;
 
 /* Private functions */
 /*============================================================================*/
-void TX_ISR (void);
-void RX_ISR (void);
-void Error_handler (void);
+static void TX_ISR (void);
+static void RX_ISR (void);
+static void Error_handler (void);
 
 /*==============================================================================
 * Function: TX_ISR

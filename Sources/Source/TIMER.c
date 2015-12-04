@@ -54,7 +54,7 @@
 
 /* Private functions */
 /*============================================================================*/
-void InitPITChannel (T_UBYTE);
+static void InitPITChannel (T_UBYTE);
 /*==============================================================================
 * Function: InitPIT
 * 

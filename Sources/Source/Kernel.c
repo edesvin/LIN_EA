@@ -53,7 +53,7 @@ extern volatile T_UWORD raub_DynConuter[E_TSK_N_OF];
 
 /* Private Variables */
 /*============================================================================*/
-volatile T_UBYTE rub_Tick_Flag = 0;
+static volatile T_UBYTE rub_Tick_Flag = 0;
 /*==============================================================================
 * Function: ISR_Tick
 * 

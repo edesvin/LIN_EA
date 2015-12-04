@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: LIN_EA.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 03-12-2015 $
+ * $Date: 04-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.1                     */
+/*                     |         LIN_EA     |         1.2                     */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -55,11 +55,11 @@ extern volatile T_UBYTE rub_NewSlaveState = ON	;
 
 /* Private functions */
 /*============================================================================*/
-T_UBYTE Led_OFF_State (T_UBYTE);
-T_UBYTE Led_ON_State (T_UBYTE);
-T_UBYTE Led_TOGGLING_State (T_UBYTE);
-T_UBYTE Slave_FALSE_State (T_UBYTE);
-T_UBYTE Slave_TRUE_State (T_UBYTE);
+static T_UBYTE Led_OFF_State (T_UBYTE);
+static T_UBYTE Led_ON_State (T_UBYTE);
+static T_UBYTE Led_TOGGLING_State (T_UBYTE);
+static T_UBYTE Slave_FALSE_State (T_UBYTE);
+static T_UBYTE Slave_TRUE_State (T_UBYTE);
 /*==============================================================================
 * Function: Get_LED_Status
 * 
@@ -133,7 +133,7 @@ void Set_SlaveState (void){
 *
 ==============================================================================*/
 
-T_UBYTE Led_OFF_State (T_UBYTE lub_StaMach_LED){
+static T_UBYTE Led_OFF_State (T_UBYTE lub_StaMach_LED){
 	
 	T_UBYTE varStatus = 0;
 	
@@ -167,7 +167,7 @@ T_UBYTE Led_OFF_State (T_UBYTE lub_StaMach_LED){
 * Description: 
 *
 ==============================================================================*/
-T_UBYTE Led_ON_State (T_UBYTE lub_StaMach_LED){
+static T_UBYTE Led_ON_State (T_UBYTE lub_StaMach_LED){
 	
 	T_UBYTE varStatus = 0;
 	
@@ -201,7 +201,7 @@ T_UBYTE Led_ON_State (T_UBYTE lub_StaMach_LED){
 * Description: 
 *
 ==============================================================================*/
-T_UBYTE Led_TOGGLING_State (T_UBYTE lub_StaMach_LED){
+static T_UBYTE Led_TOGGLING_State (T_UBYTE lub_StaMach_LED){
 	T_UBYTE varStatus = 0;
 	
 	if(rub_LEDStatus == TOGGLING){
@@ -234,7 +234,7 @@ T_UBYTE Led_TOGGLING_State (T_UBYTE lub_StaMach_LED){
 * Description: 
 *
 ==============================================================================*/
-T_UBYTE Slave_FALSE_State (T_UBYTE lub_StaMach_SLAVE){
+static T_UBYTE Slave_FALSE_State (T_UBYTE lub_StaMach_SLAVE){
 	if(rub_NewSlaveState == FALSE){
 		
 		rub_SlaveStatus = FALSE;
@@ -256,7 +256,7 @@ T_UBYTE Slave_FALSE_State (T_UBYTE lub_StaMach_SLAVE){
 * Description: 
 *
 ==============================================================================*/
-T_UBYTE Slave_TRUE_State (T_UBYTE lub_StaMach_SLAVE){
+static T_UBYTE Slave_TRUE_State (T_UBYTE lub_StaMach_SLAVE){
 	if(rub_NewSlaveState == TRUE){
 		
 		rub_SlaveStatus = TRUE;
