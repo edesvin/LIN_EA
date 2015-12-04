@@ -6,11 +6,11 @@
 /*============================================================================*/
 /*!
  * $Source: System_Initialization.c $
- * $Revision: 1.0 $
+ * $Revision: 1.1 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 02-12-2015 $
+ * $Date: 03-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -33,7 +33,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA      |         1.0                      */
+/*                     |         LIN_EA      |         1.1                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -46,18 +46,26 @@
 #include "System_Initialization.h"
 /*==============================================================================
 * Function: System_Init
-* Description: 
+* Description: This function calls the functions that initializes the mode +
+* of operation, peripherals, and the scheduler.
 *
 ==============================================================================*/
 void System_Init(void){
-	/**/
+	Mode_Entry();
+	InitPIT();
+	Init_LED();
+	Init_LIN();
+	Global_Init();
 }
 /*==============================================================================
 * Function: Mode_Entry
-* Description: 
+* Description: It initializes the mode of operation.
 *
 ==============================================================================*/
 void Mode_Entry(void){
-	/**/
+	ME.RUN[0].R = 0x001F0074;
+	ME.RUNPC[0].R = 0x000000FE;
+	ME.MCTL.R = 0x40005AF0;
+	ME.MCTL.R = 0x4000A50F; 
 }
 
