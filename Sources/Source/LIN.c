@@ -5,7 +5,7 @@
 /*============================================================================*/
 /*!
  * $Source: LIN.c $
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.4                      */
+/*                     |         LIN_EA     |         1.5                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -50,7 +50,9 @@
 /*============================================================================*/
 #define TX_IRQ 80
 #define RX_IRQ 79
-#define Error_IRQ 81
+#define ERROR_IRQ 81
+#define PIN_TX 18
+#define PIN_RX 19
 /*============================================================================*/
 /* Constants and types */
 /*============================================================================*/
@@ -74,6 +76,10 @@ typedef enum {
 	TRANSMISSION
 }TX_STATES;
 
+typedef enum {
+	LIN_TX = 2,
+	LIN_RX
+}PIN_STATE;
 /*============================================================================*/
 extern volatile T_UBYTE rub_NewSlaveState;
 extern volatile T_UBYTE rub_SlaveStatus;
@@ -195,43 +201,50 @@ T_UBYTE TxState(T_UBYTE lub_TxStateVar){
 *
 ==============================================================================*/
 void RX_ISR (void){
-
-	switch (LINFLEX_0.BDRL.B.DATA0){
-	
-		case cmd_NONE:
+	if(LINFLEX_0.LINSR.B.DRF){
+		LINFLEX_0.LINSR.B.DRF = 1;
+			
+		switch (LINFLEX_0.BDRL.B.DATA0){
+		
+			case cmd_NONE:
+					/* Do nothing */
+				break;
+			case cmd_LED_on:
+				if(rub_SlaveStatus == TRUE){
+					rub_LEDStatus = ON;
+				}else{
+					/* Do nothing*/
+				}
+				break;
+			case cmd_LED_off:
+				if(rub_SlaveStatus == TRUE){
+					rub_LEDStatus = OFF;
+				}else{
+					/* Do nothing*/
+				}
+				break;
+			case cmd_LED_toggling:
+				if(rub_SlaveStatus == TRUE){
+					rub_LEDStatus = TOGGLING;
+				}else{
+					/* Do nothing*/
+				}
+				break;
+			case cmd_disable_slv:
+				rub_NewSlaveState = FALSE;
+				break;
+			case cmd_enable_slv:
+				rub_NewSlaveState = TRUE;
+				break;
+			default:
 				/* Do nothing */
-			break;
-		case cmd_LED_on:
-			if(rub_SlaveStatus == TRUE){
-				rub_LEDStatus = ON;
-			}else{
-				/* Do nothing*/
-			}
-			break;
-		case cmd_LED_off:
-			if(rub_SlaveStatus == TRUE){
-				rub_LEDStatus = OFF;
-			}else{
-				/* Do nothing*/
-			}
-			break;
-		case cmd_LED_toggling:
-			if(rub_SlaveStatus == TRUE){
-				rub_LEDStatus = TOGGLING;
-			}else{
-				/* Do nothing*/
-			}
-			break;
-		case cmd_disable_slv:
-			rub_NewSlaveState = FALSE;
-			break;
-		case cmd_enable_slv:
-			rub_NewSlaveState = TRUE;
-			break;
-		default:
-			/* Do nothing */
-			break;
-	}	
+				break;
+		}	
+	}else if(LINFLEX_0.LINSR.B.HRF){ /* Header Reception Flag */
+		LINFLEX_0.LINSR.B.HRF = 1;
+	}else{
+		/* Do nothing */
+	}
 
 }
 /*==============================================================================
@@ -241,6 +254,10 @@ void RX_ISR (void){
 *
 ==============================================================================*/
 void Init_LIN (void){
+	
+	Set_Pin_Mode (PIN_TX, LIN_TX);
+	Set_Pin_Mode (PIN_RX, LIN_RX);
+	
 	LINFLEX_0.LINCR1.B.INIT = 0x01; 	/* Starting initialization mode */
 
     LINFLEX_0.LINCR1.B.SLEEP = 0x00; 	/* Sleep clear */
@@ -312,10 +329,10 @@ void Init_LIN (void){
 /*        LIN interrupt enable register  (LINFLEX_0_LINIER)   */
 /*----------------------------------------------------------- */
 
-    LINFLEX_0.LINIER.R = 0x0004;
-        /* Header Received Interrupt: Disabled  		 	*/ //not so sure
-        /* Data Transmitted Interrupt: Disabled  		 	*/ //not so sure
-        /* Data Reception Complete Interrupt: Enabled   	*/ //not so sure
+    LINFLEX_0.LINIER.R = 0x0002;
+        /* Header Received Interrupt: Disabled  			*/ /*not so sure*/
+        /* Data Transmitted Interrupt: Enabled  		 	*/ /*not so sure*/
+        /* Data Reception Complete Interrupt: Disabled		*/ /*not so sure*/
         /* Data Buffer Empty Interrupt: Disabled  		 	*/
         /* Data Buffer Full Interrupt: Disabled  		 	*/
         /* Wakeup Interrupt: Disabled   				 	*/
@@ -379,9 +396,9 @@ void Init_LIN (void){
 	
     LINFLEX_0.LINCR1.B.INIT = 0x00; /*Initialization done*/
 		
-	INTC_InstallINTCInterruptHandler(TX_ISR,TX_IRQ,1);
-	INTC_InstallINTCInterruptHandler(RX_ISR,RX_IRQ,2);	
-	INTC_InstallINTCInterruptHandler(Error_handler,Error_IRQ,3);	
+	INTC_InstallINTCInterruptHandler(&TX_ISR, TX_IRQ, 1);
+	INTC_InstallINTCInterruptHandler(&RX_ISR, RX_IRQ, 2);	
+	INTC_InstallINTCInterruptHandler(&Error_handler, ERROR_IRQ, 3);	
 	
 	INTC.CPR.R = 0;
 }
