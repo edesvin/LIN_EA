@@ -5,7 +5,7 @@
 /*============================================================================*/
 /*!
  * $Source: TIMER.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
@@ -34,7 +34,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.1                     */
+/*                     |         LIN_EA     |         1.2                     */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -50,6 +50,7 @@
 #define LDVAL_0	0x0009C3FF		/*	Time Start Value */
 #define ISR_PIT_CH0 59
 #define PRIORITY_1 1
+#define CHANNEL_0 0
 /*==============================================================================
 * Function: InitPIT
 * 
@@ -62,6 +63,7 @@ void InitPIT (void){
 	PIT.PITMCR.B.FRZ = 1;													//Timers are stopped in debug mode.
 	INTC_InstallINTCInterruptHandler( Tick_ISR, ISR_PIT_CH0, PRIORITY_1 );	//Software Interrupt
 	INTC.CPR.R = 0;
+	InitPITChannel(CHANNEL_0);
 	
 }
 /*==============================================================================
