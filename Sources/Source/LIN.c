@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: LIN.c $
- * $Revision: 1.5 $
+ * $Revision: 1.6 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 03-12-2015 $
+ * $Date: 04-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.5                      */
+/*                     |         LIN_EA     |         1.6                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -80,22 +80,25 @@ typedef enum {
 	LIN_TX = 2,
 	LIN_RX
 }PIN_STATE;
+
+/* Exported variables */
 /*============================================================================*/
 extern volatile T_UBYTE rub_NewSlaveState;
 extern volatile T_UBYTE rub_SlaveStatus;
 extern volatile T_UBYTE rub_LEDStatus;
 
+/* Private variables */
 /*============================================================================*/
 
 T_UBYTE raub_MembersInits[6] = {'A','Z','S','E','E','V'};
 T_UBYTE rub_TeamNumber = 1;
 
-/*============================================================================*/
 /* Private functions */
-T_UBYTE IdleState(T_UBYTE);
-T_UBYTE TxState(T_UBYTE);
-
 /*============================================================================*/
+void TX_ISR (void);
+void RX_ISR (void);
+void Error_handler (void);
+
 /*==============================================================================
 * Function: TX_ISR
 * 
@@ -105,38 +108,9 @@ T_UBYTE TxState(T_UBYTE);
 *
 ==============================================================================*/
 void TX_ISR (void){
-	static T_UBYTE rub_TxStateVar = IDLE;
-	
-	switch (rub_TxStateVar) {
-	
-		case IDLE:
-			rub_TxStateVar = IdleState(rub_TxStateVar);
-			break;
-			
-		case TRANSMISSION:
-			rub_TxStateVar = TxState(rub_TxStateVar);
-			break;
-			
-		default:
-			/* Do nothing. */
-			break;
-	
-	}
-	
-}
-/*==============================================================================
-* Function: Tx_IdleState
-* 
-* Description: 
-* 
-* 
-*
-==============================================================================*/
-T_UBYTE IdleState(T_UBYTE lub_TxStateVar){
 
 	if(LINFLEX_0.LINSR.B.HRF){ /* Header Reception Flag */
 		LINFLEX_0.LINSR.B.HRF = 1;
-		lub_TxStateVar = TRANSMISSION;
 		
 		switch (LINFLEX_0.IFMI.B.IFMI){ /* Filter Match Index */
 		
@@ -166,31 +140,7 @@ T_UBYTE IdleState(T_UBYTE lub_TxStateVar){
 		
 		LINFLEX_2.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
 		
-	}else{
-		/* Do nothing */
 	}
-	
-	return lub_TxStateVar;
-}
-/*==============================================================================
-* Function: Tx_TransmissionState
-* 
-* Description: 
-* 
-* 
-*
-==============================================================================*/
-T_UBYTE TxState(T_UBYTE lub_TxStateVar){
-
-	if(LINFLEX_0.LINSR.B.DTF){ /*Data Transmission Completed Flag */ 
-	/* ******Bit_error and time out implementation must be done********* */
-		LINFLEX_0.LINSR.B.DTF = 1;
-		lub_TxStateVar = IDLE;		
-	}else{
-		/* Do nothing */
-	}
-	
-	return lub_TxStateVar;
 }
 /*==============================================================================
 * Function: RX_ISR

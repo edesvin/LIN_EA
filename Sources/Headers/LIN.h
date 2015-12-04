@@ -49,10 +49,9 @@
 #include "IntcInterrupts.h"
 
 #include "LIN_EA.h"
+
+/* Public functions */
 /*============================================================================*/
-void TX_ISR (void);
-void RX_ISR (void);
 void Init_LIN (void);
-void Error_handler (void);
 
 #endif /* LIN_H_ */

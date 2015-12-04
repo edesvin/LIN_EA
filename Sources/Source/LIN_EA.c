@@ -46,17 +46,18 @@
 /* Includes */
 /*============================================================================*/
 #include "LIN_EA.h"
+
+/* Public variables */
 /*============================================================================*/
 extern volatile T_UBYTE rub_LEDStatus = OFF;
 extern volatile T_UBYTE rub_SlaveStatus = ON;
-
 extern volatile T_UBYTE rub_NewSlaveState = ON	;
 
+/* Private functions */
 /*============================================================================*/
 T_UBYTE Led_OFF_State (T_UBYTE);
 T_UBYTE Led_ON_State (T_UBYTE);
 T_UBYTE Led_TOGGLING_State (T_UBYTE);
-
 T_UBYTE Slave_FALSE_State (T_UBYTE);
 T_UBYTE Slave_TRUE_State (T_UBYTE);
 /*==============================================================================

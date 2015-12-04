@@ -67,8 +67,9 @@ typedef struct{
 	T_UWORD uw_Offset;			/*	Offset				*/
 	
 }S_STAT;
-/*============================================================================*/
 
+/* Public functions */
+/*============================================================================*/
 extern void Global_Init(void);
 
 #endif /* INIT_TASKS_H_ */

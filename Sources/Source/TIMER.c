@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: TIMER.c $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 03-12-2015 $
+ * $Date: 04-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -34,7 +34,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.2                     */
+/*                     |         LIN_EA     |         1.3                     */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -51,6 +51,10 @@
 #define ISR_PIT_CH0 59
 #define PRIORITY_1 1
 #define CHANNEL_0 0
+
+/* Private functions */
+/*============================================================================*/
+void InitPITChannel (T_UBYTE);
 /*==============================================================================
 * Function: InitPIT
 * 
@@ -59,9 +63,9 @@
 ==============================================================================*/
 void InitPIT (void){
 	
-	PIT.PITMCR.B.MDIS = 0;													//Clock for PIT timers is enabled.
-	PIT.PITMCR.B.FRZ = 1;													//Timers are stopped in debug mode.
-	INTC_InstallINTCInterruptHandler( Tick_ISR, ISR_PIT_CH0, PRIORITY_1 );	//Software Interrupt
+	PIT.PITMCR.B.MDIS = 0;													/* Clock for PIT timers is enabled.		*/
+	PIT.PITMCR.B.FRZ = 1;													/* Timers are stopped in debug mode. 	*/
+	INTC_InstallINTCInterruptHandler( Tick_ISR, ISR_PIT_CH0, PRIORITY_1 );	/* Software Interrupt					*/
 	INTC.CPR.R = 0;
 	InitPITChannel(CHANNEL_0);
 	
@@ -74,9 +78,9 @@ void InitPIT (void){
 ==============================================================================*/
 void InitPITChannel (T_UBYTE lub_CH ) {
 	
-	PIT.CH[lub_CH].LDVAL.R = LDVAL_0;	//Time Start Value.
-	PIT.CH[lub_CH].TCTRL.B.TEN = 1;		//Timer will be active.
-	PIT.CH[lub_CH].TCTRL.B.TIE = 1;		//Interrupt will be requested whenever TIF is set.
-	PIT.CH[lub_CH].TFLG.B.TIF = 1;		//Time Interrupt Flag.
-	
+	PIT.CH[lub_CH].LDVAL.R = LDVAL_0;	/* Time Start Value.									 */
+	PIT.CH[lub_CH].TCTRL.B.TEN = 1;		/* Timer will be active.								 */
+	PIT.CH[lub_CH].TCTRL.B.TIE = 1;		/* Interrupt will be requested whenever TIF is set.		 */
+	PIT.CH[lub_CH].TFLG.B.TIF = 1;		/* Time Interrupt Flag.									 */
+		
 }
