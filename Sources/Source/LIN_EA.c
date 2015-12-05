@@ -5,7 +5,7 @@
 /*============================================================================*/
 /*!
  * $Source: LIN_EA.c $
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.3                     */
+/*                     |         LIN_EA     |         1.4                     */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -240,7 +240,7 @@ static T_UBYTE Slave_FALSE_State (T_UBYTE lub_StaMach_SLAVE){
 		rub_SlaveStatus = FALSE;
 	}
 	
-	else if(rub_SlaveStatus == TRUE){
+	else if(rub_NewSlaveState == TRUE){
 	
 		lub_StaMach_SLAVE = TRUE;
 		rub_SlaveStatus = TRUE;
@@ -262,7 +262,7 @@ static T_UBYTE Slave_TRUE_State (T_UBYTE lub_StaMach_SLAVE){
 		rub_SlaveStatus = TRUE;
 	}
 	
-	else if(rub_SlaveStatus == FALSE){
+	else if(rub_NewSlaveState == FALSE){
 	
 		lub_StaMach_SLAVE = FALSE;
 		rub_SlaveStatus = FALSE;
