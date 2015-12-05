@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: LIN_EA.c $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 04-12-2015 $
+ * $Date: 05-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.2                     */
+/*                     |         LIN_EA     |         1.3                     */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -49,7 +49,7 @@
 
 /* Public variables */
 /*============================================================================*/
-extern volatile T_UBYTE rub_LEDStatus = OFF;
+extern volatile T_UBYTE rub_LEDStatus = TOGGLING;
 extern volatile T_UBYTE rub_SlaveStatus = ON;
 extern volatile T_UBYTE rub_NewSlaveState = ON	;
 

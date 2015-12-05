@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: Init_Tasks.c $
- * $Revision: 1.2 $
+ * $Revision: 1.4 $
  * $Author:		Edgar Escayola Vinagre	$
  *		 		Adrian Zacarias Siete	$
  *			
- * $Date: 04-12-2015 $
+ * $Date: 05-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -37,7 +37,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |        LIN_EA      |           1.2                   */
+/*                     |        LIN_EA      |           1.4                   */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -51,12 +51,12 @@
 
 /* Public variables */
 /*============================================================================*/
-extern volatile T_UWORD raub_DynConuter[E_TSK_N_OF];
+volatile T_UWORD raub_DynConuter[E_TSK_N_OF];
 
-extern const S_STAT cas_STAT[E_TSK_N_OF] = {/*	Function Pointer	-	Period 	-	  Offset	*/
+const S_STAT cas_STAT[E_TSK_N_OF] = {/*	Function Pointer	-	Period 	-	  Offset	*/
 		
-		{		&Task0_SlaveState,		20	,		0		},
-		{		&Task1_LED,				200	,		1		},
+		{		&Task0_SlaveState,		2	,		0		},
+		{		&Task1_LED,				20	,		1		},
 		
 		/*	Add here your new task and a comma before the last one	*/			
 		/*	{	Function Pointer	,	Period	,		Offset	}	*/	

@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: LIN.c $
- * $Revision: 1.6 $
+ * $Revision: 1.7 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 04-12-2015 $
+ * $Date: 05-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.6                      */
+/*                     |         LIN_EA     |         1.7                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -48,11 +48,11 @@
 #include "LIN.h"
 
 /*============================================================================*/
-#define TX_IRQ 80
-#define RX_IRQ 79
+#define TX_IRQ  80 /*123*/
+#define RX_IRQ 79 /*122*/
 #define ERROR_IRQ 81
-#define PIN_TX 18
-#define PIN_RX 19
+#define PIN_TX 18 /*74*/
+#define PIN_RX 19 /*75*/
 /*============================================================================*/
 /* Constants and types */
 /*============================================================================*/
@@ -95,9 +95,9 @@ static T_UBYTE rub_TeamNumber = 1;
 
 /* Private functions */
 /*============================================================================*/
-static void TX_ISR (void);
-static void RX_ISR (void);
-static void Error_handler (void);
+void TX_ISR (void);
+void RX_ISR (void);
+void Error_handler (void);
 
 /*==============================================================================
 * Function: TX_ISR
@@ -110,9 +110,9 @@ static void Error_handler (void);
 void TX_ISR (void){
 
 	if(LINFLEX_0.LINSR.B.HRF){ /* Header Reception Flag */
-		LINFLEX_0.LINSR.B.HRF = 1;
+		LINFLEX_0.LINSR.B.HRF = 1;		
 		
-		switch (LINFLEX_0.IFMI.B.IFMI){ /* Filter Match Index */
+		switch (1/*LINFLEX_0.IFMI.B.IFMI*/){ /* Filter Match Index */
 		
 			case MATCH_INDEX_RSP:
 				/* Fills the first two bytes of the buffer's register */
@@ -138,7 +138,7 @@ void TX_ISR (void){
 				break;
 		}
 		
-		LINFLEX_2.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
+		LINFLEX_0.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
 		
 	}
 }
@@ -151,31 +151,47 @@ void TX_ISR (void){
 *
 ==============================================================================*/
 void RX_ISR (void){
+
 	if(LINFLEX_0.LINSR.B.DRF){
 		LINFLEX_0.LINSR.B.DRF = 1;
-			
+		
+		
 		switch (LINFLEX_0.BDRL.B.DATA0){
 		
 			case cmd_NONE:
 					/* Do nothing */
 				break;
 			case cmd_LED_on:
-				if(rub_SlaveStatus == TRUE){
+				if(/*rub_SlaveStatus == */TRUE){
 					rub_LEDStatus = ON;
+					if(LINFLEX_0.BIDR.B.ID == 0x10){
+						Set_Pin_Mode(69,0);
+						Set_Pin_State(69,!Get_Pin_State(69));
+					}
+								
 				}else{
 					/* Do nothing*/
 				}
 				break;
 			case cmd_LED_off:
-				if(rub_SlaveStatus == TRUE){
+				if(/*rub_SlaveStatus == */TRUE){
 					rub_LEDStatus = OFF;
+					if(LINFLEX_0.BIDR.B.ID == 0x10){
+						Set_Pin_Mode(69,0);
+						Set_Pin_State(69,!Get_Pin_State(69));
+					}
+								
 				}else{
 					/* Do nothing*/
 				}
 				break;
 			case cmd_LED_toggling:
-				if(rub_SlaveStatus == TRUE){
+				if(/*rub_SlaveStatus == */TRUE){
 					rub_LEDStatus = TOGGLING;
+					if(LINFLEX_0.BIDR.B.ID == 0x10){
+						Set_Pin_Mode(69,0);
+						Set_Pin_State(69,!Get_Pin_State(69));
+					}	
 				}else{
 					/* Do nothing*/
 				}
@@ -214,18 +230,18 @@ void Init_LIN (void){
 
     LINFLEX_0.UARTCR.B.UART = 0x00;	 	/* LIN Mode */
 	
-    LINFLEX_0.LINCR2.R = 0x6000; 
+    LINFLEX_0.LINCR2.R = 0x0000; //600
 	
 		/* 0 b 0110 0000 0000 0000 <- Reset status */
 	
 		/* Idle on Bit Error: Enabled -> Bit error resets LIN state machine.*/
 		/* Idle on Identifier Parity Error: Enabled -> Identifier Parity error resets LIN state machine.*/
 
-    LINFLEX_0.LINIBRR.R = 0x00D0;
-        /* Baud rate : 19200 Symbols/sec */
+    LINFLEX_0.LINIBRR.R = 416; //0x00D0;
+        /* Baud rate : 9600 Symbols/sec */
         /* Integer Baud Rate Factor: 208 */
 
-    LINFLEX_0.LINFBRR.R = 0x05;
+    LINFLEX_0.LINFBRR.R = 11; //0x05;
         /* Fractional Baud Rate Factor: 5 */
 
     LINFLEX_0.UARTCR.R = 0x0000;
@@ -244,7 +260,7 @@ void Init_LIN (void){
 /*----------------------------------------------------------- */
 /*        UART preset timeout register (LINFLEX_0_UARTPTO)    */
 /*----------------------------------------------------------- */
-    LINFLEX_0.UARTPTO.R = 0x0FFF;
+  //  LINFLEX_0.UARTPTO.R = 0x0FFF;
     
         /* Preset Timeout counter : 4095*/
 
@@ -279,10 +295,10 @@ void Init_LIN (void){
 /*        LIN interrupt enable register  (LINFLEX_0_LINIER)   */
 /*----------------------------------------------------------- */
 
-    LINFLEX_0.LINIER.R = 0x0002;
-        /* Header Received Interrupt: Disabled  			*/ /*not so sure*/
+    LINFLEX_0.LINIER.R = 0x0007;
+        /* Header Received Interrupt: enabled  			*/ /*not so sure*/
         /* Data Transmitted Interrupt: Enabled  		 	*/ /*not so sure*/
-        /* Data Reception Complete Interrupt: Disabled		*/ /*not so sure*/
+        /* Data Reception Complete Interrupt: enabled		*/ /*not so sure*/
         /* Data Buffer Empty Interrupt: Disabled  		 	*/
         /* Data Buffer Full Interrupt: Disabled  		 	*/
         /* Wakeup Interrupt: Disabled   				 	*/
@@ -299,14 +315,14 @@ void Init_LIN (void){
 /*        LIN control register 1   (LINFLEX_0_LINCR1)         */
 /*----------------------------------------------------------- */
 
-    LINFLEX_0.LINCR1.R = 0x0081; /* 0 b 0011 0000 0000 0011   */
+    LINFLEX_0.LINCR1.R = 0x3085; /*  0 b 0011 0000 1000 0101 sin el 8 */ 
         /* Initialization Request: Set 								*/
         /* Receiver Buffer: Locked									*/
         /* Slave Mode Break Detection Threshold: 11 bits			*/
 		/* MME - Master Mode Enable: Slave							*/
 		/* LBKM - Loop back Mode: Disabled							*/
 		/* Self Test Mode: Disabled									*/
-        /* Bypass Filter: Disable									*/
+        /* Bypass Filter: Disable	enable								*/
 		/* LIN Master Break Length: 10 bit							*/
         /* Automatic Wake-Up Mode: Enabled - Get out of sleep mode	*/ //not so sure
         /* LASE - LIN Slave Automatic Resynchronization: Enabled	*/
@@ -332,7 +348,7 @@ void Init_LIN (void){
 	/*MASTER_CMD_ALL*/
 	LINFLEX_0.IFCR[2].B.DFL = 0x00;  	/*Data Field Length. Number of bytes - 1 */
 	LINFLEX_0.IFCR[2].B.DIR = 0x00; 	/*Direction 0-> Receives, 1-> Transmits*/
-	LINFLEX_0.IFCR[2].B.CCS = 0x00; 	/*Enhanced Checksum*/
+	LINFLEX_0.IFCR[2].B.CCS = 0x01; 	/*Enhanced Checksum*/
 	LINFLEX_0.IFCR[2].B.ID =  0x0F;  	/*Identifier 6 bits. 0xCF with parity bits.*/	
 	
 	/*MASTER_CMD_SLV1*/
@@ -341,14 +357,14 @@ void Init_LIN (void){
 	LINFLEX_0.IFCR[3].B.CCS = 0x00; 	/*Enhanced Checksum*/
 	LINFLEX_0.IFCR[3].B.ID =  0x10;  	/*Identifier 6 bits. 0x50 with parity bits.*/	
 	
-	LINFLEX_0.IFER.B.FACT = 0x03; 	/* Activate bits FACT[0] and FACT[1] to activate the filters 0 - 3 */
+	LINFLEX_0.IFER.B.FACT = 0x03; 		/* Activate bits FACT[0] and FACT[1] to activate the filters 0 - 3 */
 	/* Finishes filters' configuration */
 	
     LINFLEX_0.LINCR1.B.INIT = 0x00; /*Initialization done*/
-		
-	INTC_InstallINTCInterruptHandler(&TX_ISR, TX_IRQ, 1);
-	INTC_InstallINTCInterruptHandler(&RX_ISR, RX_IRQ, 2);	
-	INTC_InstallINTCInterruptHandler(&Error_handler, ERROR_IRQ, 3);	
+	
+	INTC_InstallINTCInterruptHandler(&TX_ISR, TX_IRQ, 2);
+	INTC_InstallINTCInterruptHandler(&RX_ISR, RX_IRQ, 3);	
+	INTC_InstallINTCInterruptHandler(&Error_handler, ERROR_IRQ, 4);	
 	
 	INTC.CPR.R = 0;
 }
