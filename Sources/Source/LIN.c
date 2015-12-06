@@ -9,7 +9,7 @@
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 05-12-2015 $
+ * $Date: 06-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -48,10 +48,10 @@
 #include "LIN.h"
 
 /*============================================================================*/
-#define TX_IRQ 80
 #define RX_IRQ 79 
 #define PIN_TX 18 
 #define PIN_RX 19 
+#define PRIORITY_2 2
 
 #define MASTER_CMD_ALL		(0x0F)
 
@@ -91,144 +91,9 @@ static T_UBYTE rub_TeamNumber = 1;
 
 /* Private functions */
 /*============================================================================*/
-static void TX_ISR (void);
 static void RX_ISR (void);
 static void Header_handler (void);
 static void Data_reception (void);
-/*==============================================================================
-* Function: TX_ISR
-* 
-* Description: This function is called every time a transmission interrupt is
-* generated from the LINFlex controller. It implements a state machine which
-* controls the response's transmission after a valid command is received.
-*
-==============================================================================*/
-static void TX_ISR (void){
-	Set_Pin_Mode(69,0);
-	Set_Pin_State(69,!Get_Pin_State(69));
-	
-	if(LINFLEX_0.LINSR.B.DTF){
-		LINFLEX_0.LINSR.B.DTF = 1;
-	}
-	
-}
-/*==============================================================================
-* Function: RX_ISR
-* 
-* Description: This function is called every time a reception interrupt is 
-* generated from the LINFlex controller. It has a state machine, which controls
-* the response’s reception after a valid command is received.
-*
-==============================================================================	*/
-static void RX_ISR (void){
-	
-	if(LINFLEX_0.LINSR.B.HRF){ 			/* Header Reception Flag 				*/
-		
-		Header_handler();
-		LINFLEX_0.LINSR.B.HRF = 1;		/* Header Reception Flag Cleared		*/
-		
-	}else if(LINFLEX_0.LINSR.B.DRF){ 	/* Data Received Flag 					*/
-		
-		Data_reception();
-		LINFLEX_0.LINSR.B.DRF = 1; 		/* Data Received Flag cleared			*/
-		
-	}else{
-		/* Do nothing */
-	}
-
-}
-static void Header_handler (void){
-	switch(LINFLEX_0.BIDR.B.ID){
-		case MASTER_CMD_ALL:
-			LINFLEX_0.BIDR.B.DFL = 0; /* 1 byte - 1 */
-			LINFLEX_0.BIDR.B.DIR = 0; /* Reception */
-			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
-			break;
-			
-		case MASTER_CMD_SLV1:
-			LINFLEX_0.BIDR.B.DFL = 0; /* 1 byte - 1 */
-			LINFLEX_0.BIDR.B.DIR = 0; /* Reception */
-			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
-			break;
-			
-		case SLAVE1_RSP:	
-			/* Fills the first two bytes of the buffer's register */
-			LINFLEX_0.BDRL.B.DATA0 = rub_SlaveStatus;
-			LINFLEX_0.BDRL.B.DATA1 = rub_LEDStatus;
-			LINFLEX_0.BIDR.B.DFL = 1; /* 2 bytes - 1  */
-			LINFLEX_0.BIDR.B.DIR = 1; /* Transmission */
-			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
-						
-			LINFLEX_0.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
-			break;
-			
-		case SLAVE1_ID:
-			/* Fills the first buffer's register */
-			LINFLEX_0.BDRL.B.DATA0 = rub_TeamNumber;
-			LINFLEX_0.BDRL.B.DATA1 = raub_MembersInits[0];
-			LINFLEX_0.BDRL.B.DATA2 = raub_MembersInits[1];
-			LINFLEX_0.BDRL.B.DATA3 = raub_MembersInits[2];
-			
-			/* Fills the first 3 bytes of the second buffer's register */
-			LINFLEX_0.BDRM.B.DATA4 = raub_MembersInits[3];
-			LINFLEX_0.BDRM.B.DATA5 = raub_MembersInits[4];
-			LINFLEX_0.BDRM.B.DATA6 = raub_MembersInits[5];
-			
-			LINFLEX_0.BIDR.B.DFL = 6; /* 7 bytes - 1  */
-			LINFLEX_0.BIDR.B.DIR = 1; /* Transmission */
-			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
-							
-			LINFLEX_0.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
-			break;
-			
-		default:
-			LINFLEX_0.LINCR2.B.DDRQ = 1; /* Data Discard Request */
-			break;
-	}
-}
-static void Data_reception (void){
-	switch (LINFLEX_0.BDRL.B.DATA0){
-		case cmd_NONE:
-				/* Do nothing */
-			break;
-			
-		case cmd_LED_on:
-			if(rub_SlaveStatus == TRUE){
-				rub_LEDStatus = ON;			
-			}else{
-				/* Do nothing*/
-			}
-			break;
-			
-		case cmd_LED_off:
-			if(rub_SlaveStatus == TRUE){
-				rub_LEDStatus = OFF;								
-			}else{
-				/* Do nothing*/
-			}
-			break;
-			
-		case cmd_LED_toggling:
-			if(rub_SlaveStatus == TRUE){
-				rub_LEDStatus = TOGGLING;
-			}else{
-				/* Do nothing*/
-			}
-			break;
-			
-		case cmd_disable_slv:
-			rub_NewSlaveState = FALSE;
-			break;
-			
-		case cmd_enable_slv:
-			rub_NewSlaveState = TRUE;
-			break;
-			
-		default:
-			/* Do nothing */
-			break;
-	}	
-}
 /*==============================================================================
 * Function: Init_LIN
 * 
@@ -296,10 +161,10 @@ void Init_LIN (void){
         /* Header Timeout (Bit Time): 44 (Default value) 	*/
         /* Response Timeout: 14 (Default value) 			*/
 
-    LINFLEX_0.LINIER.R = 0x0007;
-        /* Header Received Interrupt: enabled  				*/ 
-        /* Data Transmitted Interrupt: enabled  		 	*/ /* Might not be necessary */
-        /* Data Reception Complete Interrupt: enabled		*/
+    LINFLEX_0.LINIER.R = 0x0005;
+        /* Header Received Interrupt: Enabled  				*/ 
+        /* Data Transmitted Interrupt: Disabled  		 	*/ 
+        /* Data Reception Complete Interrupt: Enabled		*/
         /* Data Buffer Empty Interrupt: Disabled  		 	*/
         /* Data Buffer Full Interrupt: Disabled  		 	*/
         /* Wakeup Interrupt: Disabled   				 	*/
@@ -327,9 +192,143 @@ void Init_LIN (void){
         /* Checksum Calculation: Disabled							*/
     	
     LINFLEX_0.LINCR1.B.INIT = 0x00; /* Initialization done */
-	
-	INTC_InstallINTCInterruptHandler(&TX_ISR, TX_IRQ, 2); /* This might not be necessary */
-	INTC_InstallINTCInterruptHandler(&RX_ISR, RX_IRQ, 3);	
+    
+	INTC_InstallINTCInterruptHandler(&RX_ISR, RX_IRQ, PRIORITY_2);	
 	
 	INTC.CPR.R = 0;
+}
+
+/*==============================================================================
+* Function: RX_ISR
+* 
+* Description: This function is called every time a reception interrupt is 
+* generated from the LINFlex controller. It calls the Header_handler
+* or Data_reception function if the Header Reception Flag or Data Received Flag
+* are set, respectively.  
+*
+==============================================================================	*/
+static void RX_ISR (void){
+	
+	if(LINFLEX_0.LINSR.B.HRF){ 			/* Header Reception Flag 				*/
+		
+		Header_handler();
+		LINFLEX_0.LINSR.B.HRF = 1;		/* Header Reception Flag Cleared		*/
+		
+	}else if(LINFLEX_0.LINSR.B.DRF){ 	/* Data Received Flag 					*/
+		
+		Data_reception();
+		LINFLEX_0.LINSR.B.DRF = 1; 		/* Data Received Flag cleared			*/
+		
+	}else{
+		/* Do nothing */
+	}
+
+}
+/*==============================================================================
+* Function: Header_handler
+* 
+* Description: This function is called every time a header is received. 
+* It is in charge of discard an invalid ID or setting the parameters to 
+* receive or send the response.
+*
+==============================================================================	*/
+static void Header_handler (void){
+	switch(LINFLEX_0.BIDR.B.ID){
+		case MASTER_CMD_ALL:
+			LINFLEX_0.BIDR.B.DFL = 0; /* 1 byte - 1 */
+			LINFLEX_0.BIDR.B.DIR = 0; /* Reception */
+			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
+			break;
+			
+		case MASTER_CMD_SLV1:
+			LINFLEX_0.BIDR.B.DFL = 0; /* 1 byte - 1 */
+			LINFLEX_0.BIDR.B.DIR = 0; /* Reception */
+			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
+			break;
+			
+		case SLAVE1_RSP:	
+			/* Fills the first two bytes of the buffer's register */
+			LINFLEX_0.BDRL.B.DATA0 = rub_SlaveStatus;
+			LINFLEX_0.BDRL.B.DATA1 = rub_LEDStatus;
+			LINFLEX_0.BIDR.B.DFL = 1; /* 2 bytes - 1  */
+			LINFLEX_0.BIDR.B.DIR = 1; /* Transmission */
+			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
+						
+			LINFLEX_0.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
+			break;
+			
+		case SLAVE1_ID:
+			/* Fills the first buffer's register */
+			LINFLEX_0.BDRL.B.DATA0 = rub_TeamNumber;
+			LINFLEX_0.BDRL.B.DATA1 = raub_MembersInits[0];
+			LINFLEX_0.BDRL.B.DATA2 = raub_MembersInits[1];
+			LINFLEX_0.BDRL.B.DATA3 = raub_MembersInits[2];
+			
+			/* Fills the first 3 bytes of the second buffer's register */
+			LINFLEX_0.BDRM.B.DATA4 = raub_MembersInits[3];
+			LINFLEX_0.BDRM.B.DATA5 = raub_MembersInits[4];
+			LINFLEX_0.BDRM.B.DATA6 = raub_MembersInits[5];
+			
+			LINFLEX_0.BIDR.B.DFL = 6; /* 7 bytes - 1  */
+			LINFLEX_0.BIDR.B.DIR = 1; /* Transmission */
+			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
+							
+			LINFLEX_0.LINCR2.B.DTRQ = 1; /* Trigger the transmission */
+			break;
+			
+		default:
+			LINFLEX_0.LINCR2.B.DDRQ = 1; /* Data Discard Request */
+			break;
+	}
+}
+/*==============================================================================
+* Function: Data_reception
+* 
+* Description: This function is called every time a Data Reception Flag is set. 
+* It is in charge of setting flags depending on the command received in the 
+* response.
+*
+==============================================================================	*/
+static void Data_reception (void){
+	switch (LINFLEX_0.BDRL.B.DATA0){
+		case cmd_NONE:
+				/* Do nothing */
+			break;
+			
+		case cmd_LED_on:
+			if(rub_SlaveStatus == TRUE){
+				rub_LEDStatus = ON;			
+			}else{
+				/* Do nothing*/
+			}
+			break;
+			
+		case cmd_LED_off:
+			if(rub_SlaveStatus == TRUE){
+				rub_LEDStatus = OFF;								
+			}else{
+				/* Do nothing*/
+			}
+			break;
+			
+		case cmd_LED_toggling:
+			if(rub_SlaveStatus == TRUE){
+				rub_LEDStatus = TOGGLING;
+			}else{
+				/* Do nothing*/
+			}
+			break;
+			
+		case cmd_disable_slv:
+			rub_NewSlaveState = FALSE;
+			break;
+			
+		case cmd_enable_slv:
+			rub_NewSlaveState = TRUE;
+			break;
+			
+		default:
+			/* Do nothing */
+			break;
+	}	
 }

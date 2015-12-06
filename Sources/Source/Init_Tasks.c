@@ -5,11 +5,11 @@
 /*============================================================================*/
 /*!
  * $Source: Init_Tasks.c $
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * $Author:		Edgar Escayola Vinagre	$
  *		 		Adrian Zacarias Siete	$
  *			
- * $Date: 05-12-2015 $
+ * $Date: 06-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
@@ -37,7 +37,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |        LIN_EA      |           1.4                   */
+/*                     |        LIN_EA      |           1.5                   */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -64,8 +64,7 @@ const S_STAT cas_STAT[E_TSK_N_OF] = {/*	Function Pointer	-	Period 	-	  Offset	*/
 /*==============================================================================
 * Function: Global_Init
 *
-* Description: This function initializes the scheduler, and all the other 
-* peripherals needed to run the whole software.
+* Description: This function initializes the scheduler.
 *
 ==============================================================================*/
 void Global_Init(void){
