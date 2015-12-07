@@ -5,18 +5,18 @@
 /*============================================================================*/
 /*!
  * $Source: LIN.c $
- * $Revision: 1.8 $
+ * $Revision: 1.9 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 06-12-2015 $
+ * $Date: 07-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
 /** \file
 *	This module contains the LIN driver. It consists of an initialization of
 *	the LIN controller, an error handler, and an interrupt for transmission
-*	and reception.
+*	and reception. 	
 */
 /*============================================================================*/
 /* COPYRIGHT (C) CONTINENTAL AUTOMOTIVE 2014                                  */
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.8                      */
+/*                     |         LIN_EA     |         1.9                      */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -248,8 +248,8 @@ static void Header_handler (void){
 			
 		case SLAVE1_RSP:	
 			/* Fills the first two bytes of the buffer's register */
-			LINFLEX_0.BDRL.B.DATA0 = rub_SlaveStatus;
-			LINFLEX_0.BDRL.B.DATA1 = rub_LEDStatus;
+			LINFLEX_0.BDRL.B.DATA0 = rub_LEDStatus;
+			LINFLEX_0.BDRL.B.DATA1 = rub_SlaveStatus;
 			LINFLEX_0.BIDR.B.DFL = 1; /* 2 bytes - 1  */
 			LINFLEX_0.BIDR.B.DIR = 1; /* Transmission */
 			LINFLEX_0.BIDR.B.CCS = 1; /* Classic checksum */
