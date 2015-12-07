@@ -5,15 +5,15 @@
 /*============================================================================*/
 /*!
  * $Source: LIN_EA.c $
- * $Revision: 1.2 $
+ * $Revision: 1.4 $
  * $Author: 	Edgar Escayola Vinagre	$
  * 				Adrian Zacarias Siete 	$
  *				
- * $Date: 04-12-2015 $
+ * $Date: 06-12-2015 $
  */
 /*============================================================================*/
 /* DESCRIPTION :                                                              */
-/** \file
+/*
 *	It is in charge of executing the main application of the program. It 
 *	contains two functions, which also contain the state machines to control 
 *	the LED status and the slave state.
@@ -35,7 +35,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |         LIN_EA     |         1.2                     */
+/*                     |         LIN_EA     |         1.4                     */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -50,8 +50,8 @@
 /* Public variables */
 /*============================================================================*/
 extern volatile T_UBYTE rub_LEDStatus = OFF;
-extern volatile T_UBYTE rub_SlaveStatus = ON;
-extern volatile T_UBYTE rub_NewSlaveState = ON	;
+extern volatile T_UBYTE rub_SlaveStatus = TRUE;
+extern volatile T_UBYTE rub_NewSlaveState = TRUE;
 
 /* Private functions */
 /*============================================================================*/
@@ -129,7 +129,8 @@ void Set_SlaveState (void){
 /*==============================================================================
 * Function: Led_OFF_State
 * 
-* Description: 
+* Description: Function that implements the OFF state in the state machine 
+* of the function LED_status.
 *
 ==============================================================================*/
 
@@ -164,7 +165,8 @@ static T_UBYTE Led_OFF_State (T_UBYTE lub_StaMach_LED){
 /*==============================================================================
 * Function: Led_ON_State
 * 
-* Description: 
+* Description: Function that implements the ON state in the state machine
+* of the function LED_status.
 *
 ==============================================================================*/
 static T_UBYTE Led_ON_State (T_UBYTE lub_StaMach_LED){
@@ -198,7 +200,8 @@ static T_UBYTE Led_ON_State (T_UBYTE lub_StaMach_LED){
 /*==============================================================================
 * Function: Led_TOGGLING_State
 * 
-* Description: 
+* Description: Function that implements the TOGGLING state in the state machine 
+* of the function LED_status.
 *
 ==============================================================================*/
 static T_UBYTE Led_TOGGLING_State (T_UBYTE lub_StaMach_LED){
@@ -231,7 +234,8 @@ static T_UBYTE Led_TOGGLING_State (T_UBYTE lub_StaMach_LED){
 /*==============================================================================
 * Function: Slave_FALSE_State
 * 
-* Description: 
+* Description: Function that implements the FALSE state in the state machine 
+* of the function Set_SlaveState.
 *
 ==============================================================================*/
 static T_UBYTE Slave_FALSE_State (T_UBYTE lub_StaMach_SLAVE){
@@ -240,7 +244,7 @@ static T_UBYTE Slave_FALSE_State (T_UBYTE lub_StaMach_SLAVE){
 		rub_SlaveStatus = FALSE;
 	}
 	
-	else if(rub_SlaveStatus == TRUE){
+	else if(rub_NewSlaveState == TRUE){
 	
 		lub_StaMach_SLAVE = TRUE;
 		rub_SlaveStatus = TRUE;
@@ -253,7 +257,8 @@ static T_UBYTE Slave_FALSE_State (T_UBYTE lub_StaMach_SLAVE){
 /*==============================================================================
 * Function: Slave_TRUE_State
 * 
-* Description: 
+* Description: Function that implements the TRUE state in the state machine
+* of the function Set_SlaveState.
 *
 ==============================================================================*/
 static T_UBYTE Slave_TRUE_State (T_UBYTE lub_StaMach_SLAVE){
@@ -262,7 +267,7 @@ static T_UBYTE Slave_TRUE_State (T_UBYTE lub_StaMach_SLAVE){
 		rub_SlaveStatus = TRUE;
 	}
 	
-	else if(rub_SlaveStatus == FALSE){
+	else if(rub_NewSlaveState == FALSE){
 	
 		lub_StaMach_SLAVE = FALSE;
 		rub_SlaveStatus = FALSE;
