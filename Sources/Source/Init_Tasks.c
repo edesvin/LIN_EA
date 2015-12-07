@@ -5,7 +5,7 @@
 /*============================================================================*/
 /*!
  * $Source: Init_Tasks.c $
- * $Revision: 1.5 $
+ * $Revision: 1.6 $
  * $Author:		Edgar Escayola Vinagre	$
  *		 		Adrian Zacarias Siete	$
  *			
@@ -37,7 +37,7 @@
 /*============================================================================*/
 /*  DATABASE           |        PROJECT     | FILE VERSION (AND INSTANCE)     */
 /*----------------------------------------------------------------------------*/
-/*                     |        LIN_EA      |           1.5                   */
+/*                     |        LIN_EA      |           1.6                   */
 /*============================================================================*/
 /*                               OBJECT HISTORY                               */
 /*============================================================================*/
@@ -56,7 +56,7 @@ volatile T_UWORD raub_DynConuter[E_TSK_N_OF];
 const S_STAT cas_STAT[E_TSK_N_OF] = {/*	Function Pointer	-	Period 	-	  Offset	*/
 		
 		{		&Task0_SlaveState,		2	,		0		},
-		{		&Task1_LED,				20	,		1		},
+		{		&Task1_LED,				40	,		1		},
 		
 		/*	Add here your new task and a comma before the last one	*/			
 		/*	{	Function Pointer	,	Period	,		Offset	}	*/	
