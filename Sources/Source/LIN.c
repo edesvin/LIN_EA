@@ -88,6 +88,8 @@ extern volatile T_UBYTE rub_LEDStatus;
 
 static T_UBYTE raub_MembersInits[6] = {'A','Z','S','E','E','V'};
 static T_UBYTE rub_TeamNumber = 1;
+T_ULONG br = 0;
+T_ULONG br2 = 0;
 
 /* Private functions */
 /*============================================================================*/
@@ -128,10 +130,10 @@ void Init_LIN (void){
   
     LINFLEX_0.LINFBRR.R = 11; 
 		/* Baud rate : 9600 Symbols/seconds					*/
-        /* Fractional Baud Rate Factor: 11 (0x05 for 19200)	*/
+        /* Fractional Baud Rate Factor: 11					*/
     
-    LINFLEX_0.LINIBRR.R = 416; 
-        /* Integer Baud Rate Factor: 416 (0x00D0 for 19200) 	*/
+    LINFLEX_0.LINIBRR.R = 416; //340 and 11 = 11740.96 9.4% max: 10944 365; 10938.3 si.. 353
+        /* Integer Baud Rate Factor: 416 */
 
     LINFLEX_0.UARTCR.R = 0x0000;
         /* UART Mode: Disable*/
@@ -314,6 +316,8 @@ static void Data_reception (void){
 		case cmd_LED_toggling:
 			if(rub_SlaveStatus == TRUE){
 				rub_LEDStatus = TOGGLING;
+				br = LINFLEX_0.LINFBRR.R;
+				br2 = LINFLEX_0.LINIBRR.R;
 			}else{
 				/* Do nothing*/
 			}
